@@ -7,8 +7,8 @@ jobs:
     steps:
       - run: |
           set +e
-          M=https://msc.fema.gov/arcgis/rest/services
-          curl -s -m 30 "$M/NFHL_Print?f=json" | head -c 600; echo
-          for s in $(curl -s -m 30 "$M/NFHL_Print?f=json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(' '.join(x['name']+'/'+x['type'] for x in d.get('services',[])))"); do
-            echo "== $s"; curl -s -m 30 "$M/$s?f=json" | python3 -c "import json,sys; d=json.load(sys.stdin); print([(l['id'],l['name']) for l in d.get('layers',[])][:40])"
+          Q=https://msc.fema.gov/arcgis/rest/services/NFHL_Print/NFHLQuery/MapServer
+          P='geometry=-95.3612,29.7615&geometryType=esriGeometryPoint&inSR=4326&returnGeometry=false&f=json'
+          for u in "$Q/28/query?$P&outFields=FLD_ZONE,ZONE_SUBTY,SFHA_TF,STATIC_BFE,V_DATUM,DEPTH,LEN_UNIT" "$Q/3/query?$P&outFields=FIRM_PAN,EFF_DATE" "$Q/1/query?$P&outFields=EFF_DATE" "$Q/2/query?$P&outFields=OUTCOME&distance=150&units=esriSRUnit_Meter" "$Q/28/query?geometry=-80.0533,26.7153&geometryType=esriGeometryPoint&inSR=4326&returnGeometry=false&f=json&outFields=FLD_ZONE&distance=15&units=esriSRUnit_Meter"; do
+            curl -s -m 30 -D h.txt -H "Origin: https://floodinsurancedata.com" -o out.txt -w "%{http_code} %{time_total}s " "$u"; grep -i "access-control-allow-origin" h.txt | tr -d '\r\n'; echo; head -c 300 out.txt; echo; echo "  <- ${u:70:60}"
           done
