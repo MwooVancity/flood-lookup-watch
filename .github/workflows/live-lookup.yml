@@ -1,0 +1,19 @@
+name: live-lookup
+# Nightly check of the public flood zone lookup on floodinsurancedata.com against FEMA's own map service and the
+# Census geocoder, from a US runner (FEMA refuses many non-US networks). Public repo: free Actions minutes.
+on:
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  live-tool:
+    runs-on: ubuntu-26.04   # same pinned image as the site repo's watch job
+    timeout-minutes: 15
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q playwright==1.64.1 && python -m playwright install --with-deps chromium
+      - run: python -I tools/live_zonemap.py --browser chromium
