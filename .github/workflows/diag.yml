@@ -3,11 +3,10 @@ on: workflow_dispatch
 jobs:
   diag:
     runs-on: ubuntu-26.04
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - run: |
-          B=https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer
-          P='geometry=-95.3612,29.7615&geometryType=esriGeometryPoint&inSR=4326&returnGeometry=false&f=json'
-          for u in "$B?f=json" "$B/28?f=json" "$B/28/query?$P&outFields=FLD_ZONE" "$B/3/query?$P&outFields=FIRM_PAN" "$B/28/query?$P&outFields=FLD_ZONE&distance=15&units=esriSRUnit_Meter" "$B/34/query?$P&outFields=OUTCOME&distance=150&units=esriSRUnit_Meter" "https://msc.fema.gov/portal/home"; do
-            curl -s -m 40 -o out.txt -w "%{http_code} %{time_total}s " "$u"; head -c 120 out.txt | tr '\n' ' '; echo " <- ${u:0:110}"
+          set +e
+          for u in "https://hazards.fema.gov/arcgis/rest/services?f=json" "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer?f=json" "https://msc.fema.gov/arcgis/rest/services?f=json" "https://msc.fema.gov/portal/home" "https://www.fema.gov/flood-maps/national-flood-hazard-layer"; do
+            curl -s -m 30 -o out.txt -w "%{http_code} %{time_total}s " "$u"; head -c 90 out.txt | tr '\n\r' '  '; echo " <- $u"
           done
