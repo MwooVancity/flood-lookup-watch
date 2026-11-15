@@ -7,6 +7,8 @@ jobs:
     steps:
       - run: |
           set +e
-          for u in "https://hazards.fema.gov/arcgis/rest/services?f=json" "https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer?f=json" "https://msc.fema.gov/arcgis/rest/services?f=json" "https://msc.fema.gov/portal/home" "https://www.fema.gov/flood-maps/national-flood-hazard-layer"; do
-            curl -s -m 30 -o out.txt -w "%{http_code} %{time_total}s " "$u"; head -c 90 out.txt | tr '\n\r' '  '; echo " <- $u"
+          M=https://msc.fema.gov/arcgis/rest/services
+          curl -s -m 30 "$M/NFHL_Print?f=json" | head -c 600; echo
+          for s in $(curl -s -m 30 "$M/NFHL_Print?f=json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(' '.join(x['name']+'/'+x['type'] for x in d.get('services',[])))"); do
+            echo "== $s"; curl -s -m 30 "$M/$s?f=json" | python3 -c "import json,sys; d=json.load(sys.stdin); print([(l['id'],l['name']) for l in d.get('layers',[])][:40])"
           done
