@@ -3,12 +3,10 @@ on: workflow_dispatch
 jobs:
   diag:
     runs-on: ubuntu-26.04
-    timeout-minutes: 6
+    timeout-minutes: 4
     steps:
       - run: |
           set +e
           Q=https://msc.fema.gov/arcgis/rest/services/NFHL_Print/NFHLQuery/MapServer
-          P='geometry=-95.3612,29.7615&geometryType=esriGeometryPoint&inSR=4326&returnGeometry=false&f=json'
-          for u in "$Q/28/query?$P&outFields=FLD_ZONE,ZONE_SUBTY,SFHA_TF,STATIC_BFE,V_DATUM,DEPTH,LEN_UNIT" "$Q/3/query?$P&outFields=FIRM_PAN,EFF_DATE" "$Q/1/query?$P&outFields=EFF_DATE" "$Q/2/query?$P&outFields=OUTCOME&distance=150&units=esriSRUnit_Meter" "$Q/28/query?geometry=-80.0533,26.7153&geometryType=esriGeometryPoint&inSR=4326&returnGeometry=false&f=json&outFields=FLD_ZONE&distance=15&units=esriSRUnit_Meter"; do
-            curl -s -m 30 -D h.txt -H "Origin: https://floodinsurancedata.com" -o out.txt -w "%{http_code} %{time_total}s " "$u"; grep -i "access-control-allow-origin" h.txt | tr -d '\r\n'; echo; head -c 300 out.txt; echo; echo "  <- ${u:70:60}"
-          done
+          curl -s -m 30 -D h.txt -H "Origin: https://floodinsurancedata.com" -o img.png -w "%{http_code} %{content_type} %{size_download}B %{time_total}s\n" "$Q/export?bbox=-8918000,3089000,-8917000,3090000&bboxSR=3857&imageSR=3857&size=256,256&layers=show:28&transparent=true&format=png32&f=image"
+          file img.png
