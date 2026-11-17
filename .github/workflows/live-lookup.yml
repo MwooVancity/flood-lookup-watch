@@ -16,4 +16,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q playwright==1.64.1 && python -m playwright install --with-deps chromium
+      # owner 11-16: a red run emails the owner; the result is read from this log by the site repo's tools/actions_check.py
+      # ("LIVE ZONEMAP PASS" / "LIVE ZONEMAP FAIL"), so the test step may fail without failing the run
       - run: python -I tools/live_zonemap.py --browser chromium
+        continue-on-error: true
